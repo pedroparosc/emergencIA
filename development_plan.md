@@ -14,6 +14,19 @@ conferir.
 
 **Legenda:** `[x]` concluída · `[ ]` pendente · 🔶 opcional/evolução
 
+### Progresso atual
+
+| Fase | Concluídas | Situação |
+|------|-----------|----------|
+| F0 Fundação | 5/5 | ✅ |
+| F1 Núcleo de triagem e conversa | 6/6 | ✅ |
+| F2 Geo, persistência e chamados | 8/8 | ✅ |
+| F3 Integração WhatsApp | 5/7 | 🟡 falta validar com a conta Meta da equipe |
+| F4 Web mobile (PWA) | 7/7 | ✅ |
+| F5 Deploy e documentação | 3/6 | 🟡 docs prontos; deploy depende das contas da equipe |
+| F6 Apresentação | 3/6 | 🟡 depende do texto do edital (itens 2 e 4) |
+| **MVP** | **37/45** | Testes automatizados: **113 passando** |
+
 ---
 
 ## Sumário
@@ -189,7 +202,7 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 | [x] | F0.2 | Criar `development_plan.md` | Este arquivo |
 | [x] | F0.3 | Configurar o projeto Next.js + TypeScript + Vitest (`package.json`, `tsconfig`, `next.config`) | `npm run lint` sem erros |
 | [x] | F0.4 | `.env.example` documentado e `.gitignore` | Arquivo presente com todas as variáveis |
-| [ ] | F0.5 | README com visão geral, como rodar e links para os docs | README atualizado |
+| [x] | F0.5 | README com visão geral, como rodar e links para os docs | README atualizado |
 
 ### Fase 1 — Núcleo de triagem e conversa (backend puro)
 
@@ -243,9 +256,9 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 
 | ✔ | ID | Tarefa | Validação |
 |---|----|--------|-----------|
-| [ ] | F5.1 | Guia de deploy passo a passo (`docs/DEPLOY_VERCEL.md`) | Revisão |
-| [ ] | F5.2 | Guia de configuração do WhatsApp Cloud API (no mesmo guia) | Revisão |
-| [ ] | F5.3 | Documentação de API e arquitetura (`docs/API.md`, `docs/ARQUITETURA.md`) | Revisão |
+| [x] | F5.1 | Guia de deploy passo a passo (`docs/DEPLOY_VERCEL.md`) | Revisão |
+| [x] | F5.2 | Guia de configuração do WhatsApp Cloud API (no mesmo guia) | Revisão |
+| [x] | F5.3 | Documentação de API e arquitetura (`docs/API.md`, `docs/ARQUITETURA.md`) | Revisão |
 | [ ] | F5.4 | Criar o projeto na Vercel, conectar o GitHub e adicionar o Upstash Redis | URL `https://<projeto>.vercel.app/api/health` responde `ok` |
 | [ ] | F5.5 | Configurar as variáveis de ambiente de produção | `/api/health` mostra `whatsapp: true`, `store: redis` |
 | [ ] | F5.6 | Registrar o webhook na Meta apontando para a Vercel | Meta mostra "Verificado" |
@@ -257,9 +270,9 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 
 | ✔ | ID | Tarefa | Validação |
 |---|----|--------|-----------|
-| [ ] | F6.1 | Roteiro de apresentação (problema, solução, demo, tecnologia, impacto, próximos passos) em `docs/APRESENTACAO.md` | Revisão da equipe |
-| [ ] | F6.2 | Roteiro da demonstração ao vivo + plano B (vídeo/simulador) | Ensaio cronometrado |
-| [ ] | F6.3 | Perguntas prováveis da banca com respostas | Revisão |
+| [x] | F6.1 | Roteiro de apresentação (problema, solução, demo, tecnologia, impacto, próximos passos) em `docs/APRESENTACAO.md` | Revisão da equipe |
+| [x] | F6.2 | Roteiro da demonstração ao vivo + plano B (vídeo/simulador) | Ensaio cronometrado |
+| [x] | F6.3 | Perguntas prováveis da banca com respostas | Revisão |
 | [ ] | F6.4 | Alinhar o conteúdo aos itens 2 e 4 do edital FMU Tech Inovação 2026.2 | Precisa do texto do edital (o link do SharePoint exige login da FMU) |
 | [ ] | F6.5 | Montar os slides (PowerPoint/Google Slides) a partir do roteiro | Arquivo de slides |
 | [ ] | F6.6 | Ensaio geral com cronômetro | Apresentação no tempo do edital |
@@ -285,13 +298,13 @@ semana. "h" são horas de trabalho somadas.
 
 | Fase | Esforço | Duração no calendário | Situação |
 |------|---------|-----------------------|----------|
-| F0 — Fundação | 4 h | 2 dias | ⏳ pendente |
-| F1 — Núcleo de triagem e conversa | 14 h | 1 semana | ⏳ pendente |
-| F2 — Geo, persistência e chamados | 10 h | 1 semana | ⏳ pendente |
-| F3 — Integração WhatsApp | 10 h | 1 semana | ⏳ pendente |
-| F4 — Web mobile (PWA) | 12 h | 1 semana | ⏳ pendente |
-| F5 — Deploy e documentação | 6 h | 2 a 3 dias | ⏳ pendente |
-| F6 — Apresentação | 8 h | 1 semana | ⏳ pendente |
+| F0 — Fundação | 4 h | 2 dias | ✅ concluída |
+| F1 — Núcleo de triagem e conversa | 14 h | 1 semana | ✅ concluída |
+| F2 — Geo, persistência e chamados | 10 h | 1 semana | ✅ concluída |
+| F3 — Integração WhatsApp | 10 h | 1 semana | 🟡 código pronto; falta o teste E2E com a conta Meta (F3.6, F3.7) |
+| F4 — Web mobile (PWA) | 12 h | 1 semana | ✅ concluída |
+| F5 — Deploy e documentação | 6 h | 2 a 3 dias | 🟡 docs prontos; falta executar com as contas da equipe (F5.4 a F5.6) |
+| F6 — Apresentação | 8 h | 1 semana | 🟡 roteiro pronto; falta o texto do edital e os slides (F6.4 a F6.6) |
 | **Total MVP** | **≈ 64 h** | **≈ 5 a 6 semanas** | |
 | F7 — Evoluções | 30 a 60 h | conforme o tempo restante | 🔶 |
 
