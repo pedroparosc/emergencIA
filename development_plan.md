@@ -187,20 +187,20 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 |---|----|--------|-----------|
 | [x] | F0.1 | Analisar o repositório e os requisitos (repo vazio, requisitos enviados pelo usuário) | Seção 9 registra as premissas |
 | [x] | F0.2 | Criar `development_plan.md` | Este arquivo |
-| [ ] | F0.3 | Configurar o projeto Next.js + TypeScript + Vitest (`package.json`, `tsconfig`, `next.config`) | `npm run lint` sem erros |
-| [ ] | F0.4 | `.env.example` documentado e `.gitignore` | Arquivo presente com todas as variáveis |
+| [x] | F0.3 | Configurar o projeto Next.js + TypeScript + Vitest (`package.json`, `tsconfig`, `next.config`) | `npm run lint` sem erros |
+| [x] | F0.4 | `.env.example` documentado e `.gitignore` | Arquivo presente com todas as variáveis |
 | [ ] | F0.5 | README com visão geral, como rodar e links para os docs | README atualizado |
 
 ### Fase 1 — Núcleo de triagem e conversa (backend puro)
 
 | ✔ | ID | Tarefa | Validação |
 |---|----|--------|-----------|
-| [ ] | F1.1 | Tipos de domínio (C1) | Compila |
-| [ ] | F1.2 | NLU: normalização, sinais de alerta, contexto, tipo, sim/não e comandos (C2) | `tests/nlu.test.ts` |
-| [ ] | F1.3 | Base de protocolos para 11 tipos (colisão, moto, atropelamento, queda, queimadura, corte, engasgo, choque elétrico, intoxicação, afogamento, outro) (C3) | Revisão de conteúdo + teste de integridade |
-| [ ] | F1.4 | Motor de triagem com 4 níveis e conduta (C4) | `tests/triage.test.ts` |
-| [ ] | F1.5 | Máquina de estados com atalhos (sinal crítico pula direto para a localização) (C5) | `tests/machine.test.ts` |
-| [ ] | F1.6 | Limites do WhatsApp respeitados (3 botões, títulos ≤ 20/24 caracteres, corpo ≤ 1024) | Teste automatizado varre todas as mensagens |
+| [x] | F1.1 | Tipos de domínio (C1) | Compila |
+| [x] | F1.2 | NLU: normalização, sinais de alerta, contexto, tipo, sim/não e comandos (C2) | `tests/nlu.test.ts` |
+| [x] | F1.3 | Base de protocolos para 11 tipos (colisão, moto, atropelamento, queda, queimadura, corte, engasgo, choque elétrico, intoxicação, afogamento, outro) (C3) | Revisão de conteúdo + teste de integridade |
+| [x] | F1.4 | Motor de triagem com 4 níveis e conduta (C4) | `tests/triage.test.ts` |
+| [x] | F1.5 | Máquina de estados com atalhos (sinal crítico pula direto para a localização) (C5) | `tests/machine.test.ts` |
+| [x] | F1.6 | Limites do WhatsApp respeitados (3 botões, títulos ≤ 20/24 caracteres, corpo ≤ 1024) | Teste automatizado varre todas as mensagens |
 
 ### Fase 2 — Geolocalização, persistência e chamados
 
