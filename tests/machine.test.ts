@@ -134,7 +134,7 @@ describe("caso moderado e piora", () => {
     c.send({ kind: "location", lat: -23.5, lng: -46.6 });
     c.choose(CHOICE.PIOROU);
     expect(c.session.severity).toBe("ALTA");
-    expect(c.last.effects).toEqual([{ type: "DISPATCH_ALERT" }]);
+    expect(c.last.effects).toEqual([{ type: "DISPATCH_ALERT", insertAt: 1 }]);
   });
 
   it("'piorou' com chamado aberto adiciona nota", () => {

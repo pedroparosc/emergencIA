@@ -206,22 +206,22 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 
 | ✔ | ID | Tarefa | Validação |
 |---|----|--------|-----------|
-| [ ] | F2.1 | Haversine + busca dos hospitais mais próximos (C7) | `tests/geo.test.ts` |
-| [ ] | F2.2 | Base inicial de hospitais com PS em São Paulo (coordenadas aproximadas, demonstração) | Arquivo `src/data/hospitals.ts` |
-| [ ] | F2.3 | Interface `Store` + implementação em memória (C8) | `tests/orchestrator.test.ts` |
-| [ ] | F2.4 | Implementação Upstash Redis (sessões com TTL, chamados, deduplicação, outbox) | Funciona em produção (ver F5.4) |
-| [ ] | F2.5 | Despacho de chamado com protocolo legível (ex.: `EMG-4F7K2`) (C9) | Teste do orquestrador |
-| [ ] | F2.6 | Notificação ao hospital: painel + WhatsApp opcional + webhook opcional | Teste com notificador falso |
-| [ ] | F2.7 | Orquestrador executando efeitos e salvando sessão (C6) | `tests/orchestrator.test.ts` |
-| [ ] | F2.8 | Paciente relata piora após o chamado → nota adicionada ao chamado | Teste do orquestrador |
+| [x] | F2.1 | Haversine + busca dos hospitais mais próximos (C7) | `tests/geo.test.ts` |
+| [x] | F2.2 | Base inicial de hospitais com PS em São Paulo (coordenadas aproximadas, demonstração) | Arquivo `src/data/hospitals.ts` |
+| [x] | F2.3 | Interface `Store` + implementação em memória (C8) | `tests/orchestrator.test.ts` |
+| [x] | F2.4 | Implementação Upstash Redis (sessões com TTL, chamados, deduplicação, outbox) | Implementado e tipado; teste contra o Redis real junto com F5.4 |
+| [x] | F2.5 | Despacho de chamado com protocolo legível (ex.: `EMG-4F7K2`) (C9) | Teste do orquestrador |
+| [x] | F2.6 | Notificação ao hospital: painel + WhatsApp opcional + webhook opcional | Teste com notificador falso |
+| [x] | F2.7 | Orquestrador executando efeitos e salvando sessão (C6) | `tests/orchestrator.test.ts` |
+| [x] | F2.8 | Paciente relata piora após o chamado → nota adicionada ao chamado | Teste do orquestrador |
 
 ### Fase 3 — Integração WhatsApp
 
 | ✔ | ID | Tarefa | Validação |
 |---|----|--------|-----------|
-| [ ] | F3.1 | Parser do webhook (texto, botão, lista, localização) (C10) | `tests/whatsapp.test.ts` |
-| [ ] | F3.2 | Gerador de payloads da Graph API (texto, botões, lista, `location_request_message`) | `tests/whatsapp.test.ts` |
-| [ ] | F3.3 | Validação da assinatura `X-Hub-Signature-256` (HMAC-SHA256, comparação em tempo constante) | `tests/whatsapp.test.ts` |
+| [x] | F3.1 | Parser do webhook (texto, botão, lista, localização) (C10) | `tests/whatsapp.test.ts` |
+| [x] | F3.2 | Gerador de payloads da Graph API (texto, botões, lista, `location_request_message`) | `tests/whatsapp.test.ts` |
+| [x] | F3.3 | Validação da assinatura `X-Hub-Signature-256` (HMAC-SHA256, comparação em tempo constante) | `tests/whatsapp.test.ts` |
 | [ ] | F3.4 | `GET /api/whatsapp/webhook` (handshake `hub.verify_token`) | Teste manual com curl (docs/DEPLOY_VERCEL.md) |
 | [ ] | F3.5 | `POST /api/whatsapp/webhook` com deduplicação por `message.id` | Teste manual + logs da Vercel |
 | [ ] | F3.6 | Cliente de envio com tratamento de erro e log | Mensagem recebida no celular de teste |

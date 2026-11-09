@@ -194,8 +194,12 @@ export interface Session {
  * executa. Isso permite testar toda a lógica de conversa sem banco nem rede.
  */
 export type Effect =
-  /** Abrir chamado no hospital mais próximo com os dados da sessão. */
-  | { type: "DISPATCH_ALERT" }
+  /**
+   * Abrir chamado no hospital mais próximo com os dados da sessão.
+   * `insertAt`: posição, na lista de respostas, onde entram as mensagens de confirmação do
+   * chamado (padrão 0 = antes de todas).
+   */
+  | { type: "DISPATCH_ALERT"; insertAt?: number }
   /** Responder com os hospitais mais próximos (sem abrir chamado). */
   | { type: "SUGGEST_HOSPITALS" }
   /** Acrescentar uma observação a um chamado já aberto (ex.: "paciente piorou"). */

@@ -227,7 +227,8 @@ function goToDispatch(session: Session, now: number): MachineResult {
     return {
       session: touch(session, now, { step: "ACOMPANHAMENTO", locationPurpose: "ALERTA" }),
       replies: [...banner, ...afterDispatchReplies(session)],
-      effects: [{ type: "DISPATCH_ALERT" }],
+      // A confirmação do chamado entra logo depois do banner de caso grave.
+      effects: [{ type: "DISPATCH_ALERT", insertAt: banner.length }],
     };
   }
   return {
