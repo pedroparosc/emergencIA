@@ -222,22 +222,22 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 | [x] | F3.1 | Parser do webhook (texto, botão, lista, localização) (C10) | `tests/whatsapp.test.ts` |
 | [x] | F3.2 | Gerador de payloads da Graph API (texto, botões, lista, `location_request_message`) | `tests/whatsapp.test.ts` |
 | [x] | F3.3 | Validação da assinatura `X-Hub-Signature-256` (HMAC-SHA256, comparação em tempo constante) | `tests/whatsapp.test.ts` |
-| [ ] | F3.4 | `GET /api/whatsapp/webhook` (handshake `hub.verify_token`) | Teste manual com curl (docs/DEPLOY_VERCEL.md) |
-| [ ] | F3.5 | `POST /api/whatsapp/webhook` com deduplicação por `message.id` | Teste manual + logs da Vercel |
-| [ ] | F3.6 | Cliente de envio com tratamento de erro e log | Mensagem recebida no celular de teste |
+| [x] | F3.4 | `GET /api/whatsapp/webhook` (handshake `hub.verify_token`) | curl local: challenge devolvido; token errado → 403 |
+| [x] | F3.5 | `POST /api/whatsapp/webhook` com deduplicação por `message.id` | curl local: assinatura inválida → 401; reenvio → `processed: 0` |
+| [ ] | F3.6 | Cliente de envio com tratamento de erro e log | Código pronto e testado localmente (sem credenciais); confirmar no celular junto com F3.7 |
 | [ ] | F3.7 | Teste de ponta a ponta com o número de teste da Meta | Conversa completa gravada em vídeo para a apresentação |
 
 ### Fase 4 — Aplicação web mobile (PWA)
 
 | ✔ | ID | Tarefa | Validação |
 |---|----|--------|-----------|
-| [ ] | F4.1 | Layout mobile-first, tema claro/escuro, acessibilidade básica (contraste, `aria-live`) | Teste visual em 375 px |
-| [ ] | F4.2 | Página inicial: proposta de valor, botões "Falar no WhatsApp" e "Ligar 192", aviso legal | `npm run build` + navegação |
-| [ ] | F4.3 | Simulador do chat com os mesmos fluxos e renderização de botões, listas e localização (GPS do navegador) | Conversa completa no navegador |
-| [ ] | F4.4 | Painel do hospital: lista de chamados, gravidade, mapa (OpenStreetMap), rota, mudança de status e polling | Chamado do simulador aparece em até 5 s |
-| [ ] | F4.5 | Atualização de status chega ao usuário (WhatsApp ou simulador) | Mensagem "equipe a caminho" no simulador |
-| [ ] | F4.6 | Manifest PWA + ícone (instalável no celular) | "Adicionar à tela inicial" disponível |
-| [ ] | F4.7 | Proteção do painel e das APIs de chamados por token (`DASHBOARD_TOKEN`) | 401 sem token |
+| [x] | F4.1 | Layout mobile-first, tema claro/escuro, acessibilidade básica (contraste, `aria-live`) | Teste visual em 375 px |
+| [x] | F4.2 | Página inicial: proposta de valor, botões "Falar no WhatsApp" e "Ligar 192", aviso legal | `npm run build` + navegação |
+| [x] | F4.3 | Simulador do chat com os mesmos fluxos e renderização de botões, listas e localização (GPS do navegador) | Conversa completa no navegador |
+| [x] | F4.4 | Painel do hospital: lista de chamados, gravidade, mapa (OpenStreetMap), rota, mudança de status e polling | Chamado do simulador aparece em até 5 s |
+| [x] | F4.5 | Atualização de status chega ao usuário (WhatsApp ou simulador) | Mensagem "equipe a caminho" no simulador |
+| [x] | F4.6 | Manifest PWA + ícone (instalável no celular) | "Adicionar à tela inicial" disponível |
+| [x] | F4.7 | Proteção do painel e das APIs de chamados por token (`DASHBOARD_TOKEN`) | 401 sem token |
 
 ### Fase 5 — Deploy na Vercel e documentação
 
