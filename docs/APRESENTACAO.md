@@ -77,7 +77,9 @@ projetado; celular com WhatsApp espelhado (ou o simulador `/simulador` em outra 
 1. Usar o **simulador** (`/simulador`) com o botão *"Usar local de demonstração"*, que não depende
    do GPS.
 2. Se não houver internet: rodar localmente (`npm run dev`) no notebook.
-3. Último recurso: **vídeo gravado** da demo completa (gravar com antecedência, tarefa F3.7).
+3. Último recurso: **vídeo gravado**. Há um vídeo de 2 min do fluxo principal no simulador em
+   [`docs/demo/emergencia-demo.mp4`](demo/emergencia-demo.mp4), regravável com `scripts/record-demo.js`.
+   Se possível, grave também a versão no WhatsApp real (tarefa F3.7).
 
 ## 4. Divisão de falas (sugestão para 4 integrantes)
 
