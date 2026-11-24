@@ -1,5 +1,7 @@
 # Apresentação — emergencIA (FMU Tech Inovação 2026.2)
 
+Texto oficial da proposta: [PROPOSTA.md](PROPOSTA.md).
+
 Material de apoio para a equipe apresentar o projeto: pitch, roteiro de slides com falas,
 demonstração ao vivo com plano B, perguntas prováveis da banca e checklist.
 
