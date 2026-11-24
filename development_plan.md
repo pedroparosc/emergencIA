@@ -23,9 +23,9 @@ conferir.
 | F2 Geo, persistência e chamados | 8/8 | ✅ |
 | F3 Integração WhatsApp | 5/7 | 🟡 falta validar com a conta Meta da equipe |
 | F4 Web mobile (PWA) | 7/7 | ✅ |
-| F5 Deploy e documentação | 3/6 | 🟡 docs prontos; deploy depende das contas da equipe |
+| F5 Deploy e documentação | 4/6 | 🟡 no ar na Vercel com Redis; faltam as variáveis e o webhook do WhatsApp |
 | F6 Apresentação | 3/6 | 🟡 depende do texto do edital (itens 2 e 4) |
-| **MVP** | **37/45** | Testes automatizados: **113 passando** |
+| **MVP** | **38/45** | Testes automatizados: **113 passando** |
 
 ---
 
@@ -222,7 +222,7 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 | [x] | F2.1 | Haversine + busca dos hospitais mais próximos (C7) | `tests/geo.test.ts` |
 | [x] | F2.2 | Base inicial de hospitais com PS em São Paulo (coordenadas aproximadas, demonstração) | Arquivo `src/data/hospitals.ts` |
 | [x] | F2.3 | Interface `Store` + implementação em memória (C8) | `tests/orchestrator.test.ts` |
-| [x] | F2.4 | Implementação Upstash Redis (sessões com TTL, chamados, deduplicação, outbox) | Implementado e tipado; teste contra o Redis real junto com F5.4 |
+| [x] | F2.4 | Implementação Upstash Redis (sessões com TTL, chamados, deduplicação, outbox) | Validado em produção: sessão do simulador persiste entre requisições com o Upstash Redis (F5.4) |
 | [x] | F2.5 | Despacho de chamado com protocolo legível (ex.: `EMG-4F7K2`) (C9) | Teste do orquestrador |
 | [x] | F2.6 | Notificação ao hospital: painel + WhatsApp opcional + webhook opcional | Teste com notificador falso |
 | [x] | F2.7 | Orquestrador executando efeitos e salvando sessão (C6) | `tests/orchestrator.test.ts` |
@@ -259,12 +259,13 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 | [x] | F5.1 | Guia de deploy passo a passo (`docs/DEPLOY_VERCEL.md`) | Revisão |
 | [x] | F5.2 | Guia de configuração do WhatsApp Cloud API (no mesmo guia) | Revisão |
 | [x] | F5.3 | Documentação de API e arquitetura (`docs/API.md`, `docs/ARQUITETURA.md`) | Revisão |
-| [ ] | F5.4 | Criar o projeto na Vercel, conectar o GitHub e adicionar o Upstash Redis | URL `https://<projeto>.vercel.app/api/health` responde `ok` |
-| [ ] | F5.5 | Configurar as variáveis de ambiente de produção | `/api/health` mostra `whatsapp: true`, `store: redis` |
+| [x] | F5.4 | Criar o projeto na Vercel, conectar o GitHub e adicionar o Upstash Redis | https://emergenc-ia-gules.vercel.app/api/health responde `ok` com `store: redis` (24/11/2026) |
+| [ ] | F5.5 | Configurar as variáveis de ambiente de produção | `/api/health` mostra `whatsapp: true`, `store: redis`. Feito: `DASHBOARD_TOKEN` e Redis (`dashboardProtected: true`, `store: redis`); falta: variáveis do WhatsApp (depende da F5.6/conta Meta) |
 | [ ] | F5.6 | Registrar o webhook na Meta apontando para a Vercel | Meta mostra "Verificado" |
 
-> F3.7, F5.4 a F5.6 dependem das contas da equipe (Vercel, Meta Developers), por isso são
-> executadas pela equipe seguindo o guia.
+> F3.7, F5.5 e F5.6 dependem da conta Meta Developers da equipe, por isso são executadas pela
+> equipe seguindo o guia. Produção: https://emergenc-ia-gules.vercel.app (deploy automático a
+> cada push no `main`).
 
 ### Fase 6 — Apresentação para a faculdade
 
@@ -303,7 +304,7 @@ semana. "h" são horas de trabalho somadas.
 | F2 — Geo, persistência e chamados | 10 h | 1 semana | ✅ concluída |
 | F3 — Integração WhatsApp | 10 h | 1 semana | 🟡 código pronto; falta o teste E2E com a conta Meta (F3.6, F3.7) |
 | F4 — Web mobile (PWA) | 12 h | 1 semana | ✅ concluída |
-| F5 — Deploy e documentação | 6 h | 2 a 3 dias | 🟡 docs prontos; falta executar com as contas da equipe (F5.4 a F5.6) |
+| F5 — Deploy e documentação | 6 h | 2 a 3 dias | 🟡 no ar na Vercel com Redis; falta o WhatsApp (F5.5, F5.6) |
 | F6 — Apresentação | 8 h | 1 semana | 🟡 roteiro pronto; falta o texto do edital e os slides (F6.4 a F6.6) |
 | **Total MVP** | **≈ 64 h** | **≈ 5 a 6 semanas** | |
 | F7 — Evoluções | 30 a 60 h | conforme o tempo restante | 🔶 |
@@ -391,7 +392,7 @@ flowchart LR
     DEV["Branch de feature"] -- push --> GH["GitHub"]
     GH -- webhook --> VP["Vercel Preview<br/>URL por branch"]
     VP -- revisão + PR aprovado --> MAIN["main"]
-    MAIN -- deploy automático --> PROD["Vercel Production<br/>emergencia.vercel.app"]
+    MAIN -- deploy automático --> PROD["Vercel Production<br/>emergenc-ia-gules.vercel.app"]
     PROD --- KV[("Upstash Redis")]
     PROD --- META["Webhook Meta<br/>/api/whatsapp/webhook"]
 ```
