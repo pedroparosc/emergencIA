@@ -76,10 +76,12 @@ em memória.
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [docs/PROPOSTA.md](docs/PROPOSTA.md) | Proposta enviada ao FMU Tech Inovação (problema, público, bases de dados públicas, solução) |
 | [development_plan.md](development_plan.md) | Plano de desenvolvimento: arquitetura, stack, fases com checklist, estimativas, testes e deploy |
 | [docs/DEPLOY_VERCEL.md](docs/DEPLOY_VERCEL.md) | **Passo a passo de deploy na Vercel e configuração do WhatsApp** |
 | [docs/API.md](docs/API.md) | Referência de todas as rotas de API |
 | [docs/ARQUITETURA.md](docs/ARQUITETURA.md) | Guia do código, decisões técnicas e como estender |
+| [docs/demo/emergencia-demo.mp4](docs/demo/emergencia-demo.mp4) | Vídeo de demonstração (2 min): caso grave com chamado ao hospital e caso leve |
 | [docs/APRESENTACAO.md](docs/APRESENTACAO.md) | Roteiro da apresentação, demo e perguntas da banca |
 | [.env.example](.env.example) | Todas as variáveis de ambiente, comentadas |
 
