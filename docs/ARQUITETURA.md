@@ -35,6 +35,7 @@ src/
 └── lib/
     ├── domain/types.ts          # C1  Tipos compartilhados
     ├── triage/nlu.ts            # C2  Palavras-chave → intenção
+    ├── ai/decider.ts            #     IA da triagem (OpenRouter Decisions API) → pistas para a C2
     ├── triage/protocols.ts      # C3  Conteúdo de primeiros socorros
     ├── triage/engine.ts         # C4  Cálculo de gravidade
     ├── conversation/machine.ts  # C5  Máquina de estados (pura)
@@ -59,7 +60,8 @@ WhatsApp ──► POST /api/whatsapp/webhook
                ▼
           handleIncoming()                   (conversation/orchestrator.ts)
                │ store.getSession()
-               │ step(session, input, now)   (conversation/machine.ts) → replies + effects
+               │ shouldInterpret()? → interpret(text) (ai/decider.ts)     → NluHints (opcional)
+               │ step(session, input, now, hints) (conversation/machine.ts) → replies + effects
                │   ├─ detectCommand / detectCriticalSign / detectIncidentType (triage/nlu.ts)
                │   └─ evaluate / nextQuestion (triage/engine.ts + protocols.ts)
                │ effects:
@@ -115,7 +117,8 @@ API do canal), mais uma rota em `src/app/api/telegram/`. Use `channel: "telegram
 
 | Decisão | Alternativa | Por quê |
 |---------|-------------|---------|
-| Regras + palavras-chave | LLM para toda a conversa | Previsível, auditável, sem custo/latência; LLM fica como evolução para texto livre (F7.1) |
+| Regras + palavras-chave | LLM para toda a conversa | Previsível, auditável, sem custo/latência |
+| IA só como reforço (F7.1) | IA decidindo a conversa | Um modelo de decisão (`perplexity/pplx-decider-v1.3:free`) classifica apenas o texto que as regras não reconheceram e devolve probabilidades, não texto. As regras têm prioridade, e erro ou demora da IA (> 4 s) não muda nada. O código fica em `lib/ai/decider.ts`; a máquina recebe as pistas prontas e continua pura |
 | Polling no painel (5 s) | WebSocket/SSE | Funções serverless não mantêm conexões longas; 5 s é suficiente para o MVP |
 | Haversine (linha reta) | API de rotas (Google/OSRM) | Grátis, sem chave, determinístico; a ordenação dentro da cidade é boa o bastante |
 | Upstash Redis | Postgres | Sessões com TTL nativo, REST para serverless, integração de 1 clique na Vercel |

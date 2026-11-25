@@ -5,6 +5,7 @@
 import { expect } from "vitest";
 import { newSession, step, type MachineResult } from "@/lib/conversation/machine";
 import type { IncomingMessage, OutgoingMessage, Session } from "@/lib/domain/types";
+import type { NluHints } from "@/lib/triage/nlu";
 
 /** Verifica que a mensagem respeita os limites da WhatsApp Cloud API. */
 export function assertWhatsAppLimits(m: OutgoingMessage): void {
@@ -43,10 +44,10 @@ export class Conversation {
     this.session = newSession(channel, userId, this.clock);
   }
 
-  send(input: IncomingMessage | string): MachineResult {
+  send(input: IncomingMessage | string, hints?: NluHints): MachineResult {
     const msg: IncomingMessage = typeof input === "string" ? { kind: "text", text: input } : input;
     this.clock += 1000;
-    this.last = step(this.session, msg, this.clock);
+    this.last = step(this.session, msg, this.clock, hints);
     this.session = this.last.session;
     this.last.replies.forEach(assertWhatsAppLimits);
     return this.last;

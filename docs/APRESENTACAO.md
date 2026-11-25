@@ -32,9 +32,9 @@ demonstração ao vivo com plano B, perguntas prováveis da banca e checklist.
 | 6 | **Chamado automático** | Fluxo: localização → hospital mais próximo → painel do hospital → "equipe a caminho" volta ao usuário | "O hospital recebe gravidade, tipo, localização e telefone em segundos." | 0:50 |
 | 7 | **DEMO ao vivo** | Ver [§3](#3-roteiro-da-demonstração-ao-vivo) | — | 3:00 |
 | 8 | **Tecnologia** | Diagrama de arquitetura (development_plan.md §1); Next.js + WhatsApp Cloud API + Upstash Redis + Vercel | "Uma base de código para o bot, o site e o painel, com deploy automático." | 1:00 |
-| 9 | **Qualidade e segurança** | 113 testes automatizados; assinatura do webhook; LGPD (consentimento, dados mínimos, expiração); conteúdo baseado em protocolos oficiais | "Em saúde, previsível é melhor que criativo: usamos regras auditáveis." | 0:50 |
+| 9 | **Qualidade e segurança** | 132 testes automatizados; assinatura do webhook; LGPD (consentimento, dados mínimos, expiração); conteúdo baseado em protocolos oficiais | "Em saúde, previsível é melhor que criativo: usamos regras auditáveis." | 0:50 |
 | 10 | **Impacto e público** | Famílias, idosos, cuidadores, motoristas e motociclistas; hospitais ganham informação antes da chegada | "Menos tempo perdido, mais informação para quem vai atender." | 0:40 |
-| 11 | **Limitações e próximos passos** | Integração oficial com a Regulação do SAMU 192; base CNES/DataSUS; IA generativa para texto livre e áudio; validação com profissionais de saúde | "Sabemos o que falta, e esse é o roadmap." | 0:50 |
+| 11 | **Limitações e próximos passos** | Integração oficial com a Regulação do SAMU 192; base CNES/DataSUS; IA para áudio transcrito; validação com profissionais de saúde | "Sabemos o que falta, e esse é o roadmap." | 0:50 |
 | 12 | **Encerramento** | QR code para o site/simulador; agradecimento | "Testem agora pelo QR code." | 0:20 |
 
 **Dicas de design dos slides:** fundo claro, vermelho `#c8102e` como cor de destaque (a mesma do
@@ -95,8 +95,8 @@ projetado; celular com WhatsApp espelhado (ou o simulador `/simulador` em outra 
 | Pergunta | Resposta sugerida |
 |----------|-------------------|
 | **Isso substitui o SAMU?** | Não. O bot sempre recomenda ligar 192/193 nos casos graves. Ele ganha tempo: orienta enquanto a ajuda não chega e já entrega ao hospital a localização e a gravidade. A integração oficial com a Central de Regulação do SAMU depende de convênio com o poder público e está no roadmap. |
-| **E se o bot errar a orientação?** | As orientações são regras fixas baseadas em materiais oficiais de primeiros socorros (Ministério da Saúde, Cruz Vermelha, diretrizes de RCP), não textos inventados por IA. Na dúvida o sistema classifica para cima, e há 113 testes automatizados. Antes de uso real, o conteúdo precisa ser validado por profissionais de saúde. |
-| **Onde está a "IA"?** | A triagem é um sistema especialista baseado em regras, uma forma clássica de IA, mais o entendimento de linguagem natural por palavras-chave (entende "meu pai caiu e não acorda"). Escolhemos regras porque, em saúde, a decisão precisa ser explicável. A evolução é usar IA generativa só para interpretar textos e áudios difíceis, mantendo as regras como rede de segurança. |
+| **E se o bot errar a orientação?** | As orientações são regras fixas baseadas em materiais oficiais de primeiros socorros (Ministério da Saúde, Cruz Vermelha, diretrizes de RCP), não textos inventados por IA. Na dúvida o sistema classifica para cima, e há 132 testes automatizados. Antes de uso real, o conteúdo precisa ser validado por profissionais de saúde. |
+| **Onde está a "IA"?** | Em duas camadas. A triagem é um sistema especialista baseado em regras, uma forma clássica de IA, com entendimento de linguagem natural por palavras-chave (entende "meu pai caiu e não acorda"). Quando a pessoa escreve de um jeito que as regras não reconhecem ("ele tá todo mole, não fala nada"), um **modelo de decisão** (Perplexity Decider, via OpenRouter) classifica o relato e devolve probabilidades: há sinal de risco de vida? que tipo de acidente? As regras continuam valendo primeiro, e se a IA falhar ou demorar a conversa segue normalmente. Áudio fica para a próxima etapa. |
 | **E a LGPD?** | Consentimento explícito antes de pedir a localização, só os dados necessários (telefone, localização, respostas), sessões apagadas em 24 h e chamados em 30 dias, painel protegido por senha, webhook com assinatura. |
 | **Por que WhatsApp e não um app?** | O WhatsApp está em praticamente todos os celulares do Brasil. Ninguém baixa um app no meio de uma emergência. |
 | **Como o hospital recebe?** | Por um painel web em tempo real, opcionalmente por WhatsApp, e por integração via webhook com o sistema do hospital. |
@@ -119,7 +119,7 @@ Evidências disponíveis para citar:
 - **Produto funcionando:** URL da Vercel, simulador, painel, WhatsApp.
 - **Documentação:** `README.md`, `development_plan.md` (planejamento com fases, estimativas e
   checklist), `docs/` (deploy, API, arquitetura).
-- **Qualidade:** `npm test` (113 testes), build automático na Vercel.
+- **Qualidade:** `npm test` (132 testes), build automático na Vercel.
 - **Gestão do projeto:** histórico de commits no GitHub e tarefas marcadas no plano.
 
 ## 7. Checklist do dia

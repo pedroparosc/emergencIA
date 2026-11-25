@@ -150,10 +150,32 @@ mais distante, só hospitais com pronto-socorro. Distância em linha reta (Haver
 
 ```json
 { "status": "ok", "store": "redis", "whatsapp": true, "webhookVerifyToken": true,
-  "webhookSignature": true, "dashboardProtected": true, "simulator": true, "time": "…" }
+  "webhookSignature": true, "dashboardProtected": true, "simulator": true,
+  "ai": "perplexity/pplx-decider-v1.3:free", "time": "…" }
 ```
 
-Mostra só se cada configuração existe, nunca os valores.
+Mostra só se cada configuração existe, nunca os valores. `ai` traz o nome do modelo da IA da
+triagem, ou `false` quando `OPENROUTER_API_KEY` não está definida.
+
+---
+
+## Serviço externo: IA da triagem
+
+Quando `OPENROUTER_API_KEY` está definida, o orquestrador envia à
+[OpenRouter Decisions API](https://openrouter.ai/docs/guides/features/decisions)
+(`POST https://openrouter.ai/api/alpha/decisions`) os textos livres que as regras não
+reconheceram, com três perguntas de escolha:
+
+| Pergunta | Opções | Usada quando |
+|----------|--------|--------------|
+| `sinal_critico` | `nenhum`, `nao_respira`, `parada_cardiaca`, `inconsciente`, `labios_roxos`, `falta_de_ar`, `dor_no_peito`, `sangramento_intenso`, `convulsao`, `ferragens_ou_fogo` | `nenhum` < 50% (na dúvida, para cima) |
+| `tipo_acidente` | os 11 tipos de acidente + `INDEFINIDO` | Probabilidade ≥ 60% |
+| `contexto` | `TRANSITO`, `DOMESTICO`, `INDEFINIDO` | Probabilidade ≥ 60% |
+
+Só vão para a IA textos com 3 palavras ou mais que não sejam comando, não tenham sinal crítico
+reconhecido pelas regras e não sejam um endereço digitado. Nenhum dado além do texto é enviado
+(sem telefone, sem localização). Tempo máximo de 4 s; em erro, recusa ou demora, a conversa segue
+só pelas regras.
 
 ---
 
