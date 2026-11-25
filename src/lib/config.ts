@@ -47,6 +47,24 @@ export function redisConfig(): RedisConfig | undefined {
   return url && token ? { url, token } : undefined;
 }
 
+/** Modelo de decisão usado quando OPENROUTER_MODEL não está definido. */
+export const DEFAULT_AI_MODEL = "perplexity/pplx-decider-v1.3:free";
+
+export interface AiConfig {
+  apiKey: string;
+  model: string;
+}
+
+/**
+ * IA da triagem (OpenRouter Decisions API). Sem OPENROUTER_API_KEY, a triagem usa só as regras
+ * por palavras-chave, exatamente como antes.
+ */
+export function aiConfig(): AiConfig | undefined {
+  const apiKey = env("OPENROUTER_API_KEY");
+  if (!apiKey) return undefined;
+  return { apiKey, model: env("OPENROUTER_MODEL") ?? DEFAULT_AI_MODEL };
+}
+
 /** Token do painel do hospital. `undefined` = painel aberto (apenas desenvolvimento). */
 export const dashboardToken = (): string | undefined => env("DASHBOARD_TOKEN");
 

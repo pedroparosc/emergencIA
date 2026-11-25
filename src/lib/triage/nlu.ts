@@ -4,7 +4,8 @@
  * Por que palavras-chave e não um modelo de linguagem? Em emergências, o comportamento precisa
  * ser previsível, auditável e funcionar sem custo nem latência extra. As listas abaixo cobrem as
  * formas mais comuns de escrever (com e sem acento, abreviações de WhatsApp como "ñ" e "vc").
- * Uma evolução opcional (F7.1) é usar um LLM só para casos que estas regras não reconhecerem.
+ * Quando estas regras não reconhecem o texto, um modelo de decisão (IA) pode sugerir pistas
+ * (`NluHints`, F7.1); as regras continuam sendo a rede de segurança e têm prioridade.
  */
 import type { CriticalKind, IncidentContext, IncidentType } from "@/lib/domain/types";
 
@@ -102,6 +103,17 @@ const CRITICAL_SIGNS: ReadonlyArray<{ phrases: string[]; reason: string; kind: C
 export interface CriticalSign {
   reason: string;
   kind: CriticalKind;
+}
+
+/**
+ * Pistas sobre um texto livre vindas de fora das regras (hoje, da IA da triagem em
+ * `src/lib/ai/decider.ts`). A máquina de estados só as usa quando as regras NÃO encontraram
+ * nada: as palavras-chave sempre têm prioridade.
+ */
+export interface NluHints {
+  critical?: CriticalSign;
+  type?: IncidentType;
+  context?: IncidentContext;
 }
 
 /** Retorna o primeiro sinal crítico encontrado (motivo + natureza), ou `undefined`. */

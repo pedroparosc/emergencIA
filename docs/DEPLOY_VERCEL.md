@@ -115,6 +115,8 @@ um novo deploy** (*Deployments → ⋯ → Redeploy*).
 | `HOSPITAL_NOTIFY_WHATSAPP` | Não | Celular que faz o papel do hospital na demonstração (ex.: `5511987654321`) |
 | `HOSPITAL_WEBHOOK_URL` | Não | URL que recebe um POST JSON a cada chamado |
 | `ENABLE_SIMULATOR` | Não | `false` desliga o simulador |
+| `OPENROUTER_API_KEY` | Não (recomendada) | Chave da [OpenRouter](https://openrouter.ai/keys) para a IA da triagem. Sem ela, só as regras por palavras-chave |
+| `OPENROUTER_MODEL` | Não | Padrão `perplexity/pplx-decider-v1.3:free` (modelo de decisão gratuito) |
 
 Todas estão documentadas também em [`.env.example`](../.env.example). **Nunca** faça commit de
 valores reais.
@@ -198,9 +200,12 @@ Abra `https://SEU-PROJETO.vercel.app/api/health` e confira:
   "webhookVerifyToken": true,
   "webhookSignature": true,
   "dashboardProtected": true,
-  "simulator": true
+  "simulator": true,
+  "ai": "perplexity/pplx-decider-v1.3:free"
 }
 ```
+
+- [ ] `ai` mostra o nome do modelo (IA da triagem ligada)
 
 - [ ] `store` = `redis`
 - [ ] `whatsapp`, `webhookVerifyToken` e `webhookSignature` = `true`

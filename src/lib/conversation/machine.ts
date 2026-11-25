@@ -35,6 +35,7 @@ import {
   detectIncidentType,
   normalize,
   parseYesNo,
+  type NluHints,
 } from "@/lib/triage/nlu";
 import {
   dispositionFor,
@@ -364,8 +365,9 @@ function handleCriticalSign(
   rawText: string,
   reason: string,
   kind: CriticalKind,
+  hints?: NluHints,
 ): MachineResult {
-  const type = session.incidentType ?? detectIncidentType(rawText);
+  const type = session.incidentType ?? detectIncidentType(rawText) ?? hints?.type;
   // "Não consegue respirar" num engasgo → manobra de Heimlich.
   const effectiveKind: CriticalKind = type === "ENGASGO" && kind === "GERAL" ? "HEIMLICH" : kind;
 
@@ -387,7 +389,11 @@ function handleCriticalSign(
 
   const escalated = touch(session, now, {
     incidentType: type,
-    context: session.context ?? (type ? detectContext(rawText, type) ?? defaultContextFor(type) : detectContext(rawText)),
+    context:
+      session.context ??
+      (type
+        ? detectContext(rawText, type) ?? hints?.context ?? defaultContextFor(type)
+        : detectContext(rawText) ?? hints?.context),
     severity: "CRITICA",
     criticalKind: effectiveKind,
     reasons: [...new Set([...session.reasons, reason])],
@@ -400,11 +406,14 @@ function handleCriticalSign(
 /* Tratamento por etapa                                                       */
 /* -------------------------------------------------------------------------- */
 
-/** Tenta entender texto livre que descreve o acidente (usado no início e nos menus). */
-function handleFreeDescription(session: Session, now: number, raw: string): MachineResult | undefined {
-  const type = detectIncidentType(raw);
-  if (type) return startTriage(session, now, type, detectContext(raw, type));
-  const context = detectContext(raw);
+/**
+ * Tenta entender texto livre que descreve o acidente (usado no início e nos menus).
+ * As palavras-chave vêm primeiro; as pistas da IA só preenchem o que elas não acharam.
+ */
+function handleFreeDescription(session: Session, now: number, raw: string, hints?: NluHints): MachineResult | undefined {
+  const type = detectIncidentType(raw) ?? hints?.type;
+  if (type) return startTriage(session, now, type, detectContext(raw, type) ?? hints?.context);
+  const context = detectContext(raw) ?? hints?.context;
   if (context) {
     return {
       session: touch(session, now, { step: "TIPO", context }),
@@ -415,9 +424,9 @@ function handleFreeDescription(session: Session, now: number, raw: string): Mach
   return undefined;
 }
 
-function onStart(session: Session, now: number, input: IncomingMessage): MachineResult {
+function onStart(session: Session, now: number, input: IncomingMessage, hints?: NluHints): MachineResult {
   if (input.kind === "text") {
-    const understood = handleFreeDescription(session, now, input.text);
+    const understood = handleFreeDescription(session, now, input.text, hints);
     if (understood) return understood;
   }
   if (input.kind === "choice" && input.id.startsWith(CHOICE.CONTEXT_PREFIX)) {
@@ -426,7 +435,7 @@ function onStart(session: Session, now: number, input: IncomingMessage): Machine
   return { session: touch(session, now, { step: "CONTEXTO" }), replies: welcome(), effects: [] };
 }
 
-function onContext(session: Session, now: number, input: IncomingMessage): MachineResult {
+function onContext(session: Session, now: number, input: IncomingMessage, hints?: NluHints): MachineResult {
   if (input.kind === "choice" && input.id.startsWith(CHOICE.CONTEXT_PREFIX)) {
     const context = input.id.slice(CHOICE.CONTEXT_PREFIX.length) as IncidentContext;
     if (context === "TRANSITO" || context === "DOMESTICO") {
@@ -437,13 +446,13 @@ function onContext(session: Session, now: number, input: IncomingMessage): Machi
     const n = normalize(input.text);
     if (n === "1") return onContext(session, now, { kind: "choice", id: `${CHOICE.CONTEXT_PREFIX}TRANSITO` });
     if (n === "2") return onContext(session, now, { kind: "choice", id: `${CHOICE.CONTEXT_PREFIX}DOMESTICO` });
-    const understood = handleFreeDescription(session, now, input.text);
+    const understood = handleFreeDescription(session, now, input.text, hints);
     if (understood) return understood;
   }
   return { session: touch(session, now, {}), replies: welcome(), effects: [] };
 }
 
-function onType(session: Session, now: number, input: IncomingMessage): MachineResult {
+function onType(session: Session, now: number, input: IncomingMessage, hints?: NluHints): MachineResult {
   const context = session.context ?? "DOMESTICO";
   const types = typesForContext(context);
 
@@ -455,7 +464,7 @@ function onType(session: Session, now: number, input: IncomingMessage): MachineR
     const index = Number.parseInt(normalize(input.text), 10);
     const byNumber = Number.isInteger(index) ? types[index - 1] : undefined;
     if (byNumber) return startTriage(session, now, byNumber, context);
-    const type = detectIncidentType(input.text);
+    const type = detectIncidentType(input.text) ?? hints?.type;
     if (type) return startTriage(session, now, type, context);
   }
   return {
@@ -485,7 +494,7 @@ function onQuestion(session: Session, now: number, input: IncomingMessage): Mach
   return askNextOrConclude(updated, now);
 }
 
-function onAwaitingLocation(session: Session, now: number, input: IncomingMessage): MachineResult {
+function onAwaitingLocation(session: Session, now: number, input: IncomingMessage, hints?: NluHints): MachineResult {
   const purpose = session.locationPurpose ?? "ALERTA";
 
   if (input.kind === "location") {
@@ -512,7 +521,7 @@ function onAwaitingLocation(session: Session, now: number, input: IncomingMessag
       };
     }
     // Nova informação crítica enquanto esperamos a localização: repete as instruções certas.
-    const sign = detectCriticalSign(input.text);
+    const sign = detectCriticalSign(input.text) ?? hints?.critical;
     if (sign) {
       const kind: CriticalKind = session.incidentType === "ENGASGO" && sign.kind === "GERAL" ? "HEIMLICH" : sign.kind;
       return {
@@ -545,12 +554,17 @@ function onAwaitingLocation(session: Session, now: number, input: IncomingMessag
   };
 }
 
-function onFollowUp(session: Session, now: number, input: IncomingMessage): MachineResult {
+function onFollowUp(session: Session, now: number, input: IncomingMessage, hints?: NluHints): MachineResult {
   if (input.kind === "text") {
     // Usuário descreve um NOVO acidente: começa outra triagem.
-    const type = detectIncidentType(input.text);
+    const type = detectIncidentType(input.text) ?? hints?.type;
     if (type && !session.alertId) {
-      return startTriage(newSession(session.channel, session.userId, now), now, type, detectContext(input.text, type));
+      return startTriage(
+        newSession(session.channel, session.userId, now),
+        now,
+        type,
+        detectContext(input.text, type) ?? hints?.context,
+      );
     }
   }
   const status = session.alertId ? `Seu chamado *${session.alertId}* está ativo. ` : "";
@@ -570,8 +584,9 @@ function onFollowUp(session: Session, now: number, input: IncomingMessage): Mach
  * @param session sessão atual (use `newSession` se não existir)
  * @param input mensagem já normalizada pelo adaptador de canal
  * @param now horário atual em ms (injetado para facilitar testes)
+ * @param hints pistas da IA sobre o texto livre (opcionais); só valem onde as regras não acharam nada
  */
-export function step(session: Session, input: IncomingMessage, now: number): MachineResult {
+export function step(session: Session, input: IncomingMessage, now: number, hints?: NluHints): MachineResult {
   // 1) Comandos globais por botão.
   if (input.kind === "choice") {
     if (input.id === CHOICE.MENU) {
@@ -607,27 +622,27 @@ export function step(session: Session, input: IncomingMessage, now: number): Mac
         break;
     }
 
-    const sign = detectCriticalSign(input.text);
+    const sign = detectCriticalSign(input.text) ?? hints?.critical;
     // Só escala se ainda não estamos aguardando a localização de um caso já crítico.
     const alreadyCriticalWaiting = session.severity === "CRITICA" && session.step === "AGUARDANDO_LOCALIZACAO";
     if (sign && !alreadyCriticalWaiting) {
-      return handleCriticalSign(session, now, input.text, sign.reason, sign.kind);
+      return handleCriticalSign(session, now, input.text, sign.reason, sign.kind, hints);
     }
   }
 
   // 3) Tratamento específico da etapa atual.
   switch (session.step) {
     case "INICIO":
-      return onStart(session, now, input);
+      return onStart(session, now, input, hints);
     case "CONTEXTO":
-      return onContext(session, now, input);
+      return onContext(session, now, input, hints);
     case "TIPO":
-      return onType(session, now, input);
+      return onType(session, now, input, hints);
     case "PERGUNTAS":
       return onQuestion(session, now, input);
     case "AGUARDANDO_LOCALIZACAO":
-      return onAwaitingLocation(session, now, input);
+      return onAwaitingLocation(session, now, input, hints);
     case "ACOMPANHAMENTO":
-      return onFollowUp(session, now, input);
+      return onFollowUp(session, now, input, hints);
   }
 }

@@ -43,7 +43,8 @@
 | F4 Web mobile (PWA) | 7/7 | ✅ |
 | **F5 Deploy e documentação** | 4/6 | 🟡 **No ar na Vercel com Upstash Redis**; faltam as variáveis e o webhook do WhatsApp |
 | F6 Apresentação | 3/6 | 🟡 Roteiro pronto; faltam o texto do edital e os slides |
-| **MVP** | **38/45** | **113 testes automatizados passando** |
+| **MVP** | **38/45** | **132 testes automatizados passando** |
+| 🔶 Evolução F7.1 | 1/1 | ✅ **IA da triagem** (Perplexity Decider via OpenRouter) interpretando texto livre |
 
 Checklist completo, com o critério de pronto de cada tarefa, em
 [development_plan.md](development_plan.md#4-tarefas-por-fase).
@@ -59,7 +60,7 @@ orientações, envia a localização e o hospital mais próximo recebe o chamado
 | Etapa | O que acontece |
 |---|---|
 | **1. Relato** | A pessoa escreve com as próprias palavras ("meu pai caiu da escada e não acorda") ou navega pelos botões *Trânsito / Em casa* |
-| **2. Triagem** | O bot identifica o tipo de acidente e os sinais de alerta. Sinais críticos (não respira, desacordado, sangramento intenso, convulsão, suspeita de infarto, presos nas ferragens…) **pulam as perguntas** e vão direto para a gravidade 🔴 crítica |
+| **2. Triagem** | O bot identifica o tipo de acidente e os sinais de alerta. Sinais críticos (não respira, desacordado, sangramento intenso, convulsão, suspeita de infarto, presos nas ferragens…) **pulam as perguntas** e vão direto para a gravidade 🔴 crítica. Quando o relato foge das palavras-chave ("ele tá todo mole, não fala nada"), a **IA da triagem** classifica o texto |
 | **3. Orientação** | Instruções imediatas e o passo a passo de primeiros socorros do tipo de acidente (RCP, desengasgo, sangramento, queimadura…) |
 | **4. Localização** | Nos casos graves, o bot pede o 📍, com consentimento explícito para compartilhar localização e telefone com o hospital. Sem GPS, aceita o endereço digitado |
 | **5. Chamado** | O hospital com pronto-socorro mais próximo recebe o chamado `EMG-XXXXX` com gravidade, tipo, motivos, mapa e contato |
@@ -104,7 +105,8 @@ corte, engasgo, choque elétrico, intoxicação, afogamento e outros.
 | Dados mínimos e expiração | Só telefone, localização e respostas da triagem. Sessões expiram em **24 h** e chamados em **30 dias** (TTL no Redis) |
 | Painel protegido | `/hospital` e as APIs de chamados exigem o `DASHBOARD_TOKEN` |
 | Webhook autenticado | Toda mensagem da Meta tem a assinatura `X-Hub-Signature-256` validada (HMAC-SHA256, comparação em tempo constante) e é deduplicada pelo `message.id` |
-| Decisões explicáveis | A triagem é um sistema de regras: cada gravidade aponta o motivo ("Relato de vítima inconsciente") |
+| Decisões explicáveis | A triagem é um sistema de regras: cada gravidade aponta o motivo ("Relato de vítima inconsciente"). Quando a IA contribui, o motivo diz "(identificado pela IA)" |
+| IA com rede de segurança | A IA só recebe o texto do relato (sem telefone nem localização), as regras têm prioridade, e erro ou demora acima de 4 s não muda nada na conversa |
 | Sempre o 192 | Todo caso grave reforça "ligue 192", e toda orientação final traz o aviso legal |
 | Não depende só de cor | A gravidade aparece com cor **+ emoji + palavra** (🔴 Crítica) |
 | Acesso | Mobile-first, tema claro e escuro automático, foco visível no teclado, botões principais com 48 px de altura, `aria-live` nas mensagens do chat e no painel |
@@ -116,7 +118,7 @@ corte, engasgo, choque elétrico, intoxicação, afogamento e outros.
 |---|---|---|
 | Base de hospitais | 10 hospitais com pronto-socorro em São Paulo, coordenadas aproximadas ([`src/data/hospitals.ts`](src/data/hospitals.ts)) | Base oficial do CNES/DataSUS e filtro por especialidade (queimados, trauma, pediatria) |
 | WhatsApp | Código pronto e testado; conta Meta da equipe ainda não ligada | Número de teste da Meta → verificação do negócio para uso real |
-| Entendimento de texto | Palavras-chave e regras | IA generativa (Claude) só para interpretar texto livre e áudio, com as regras como rede de segurança |
+| Entendimento de texto | Palavras-chave e regras + IA de decisão (`perplexity/pplx-decider-v1.3:free`, plano gratuito da OpenRouter) para o texto que as regras não reconhecem | Áudio transcrito; avaliar um plano pago com limite de uso garantido para uso real |
 | Conteúdo de primeiros socorros | Baseado em materiais públicos (Ministério da Saúde/SAMU, Cruz Vermelha, diretrizes de RCP da AHA) | **Revisão por profissional de saúde antes de qualquer uso real** |
 | "Chamado ao hospital" | Painel para hospitais parceiros, com aviso opcional por WhatsApp ou webhook | Integração com a Central de Regulação do SAMU 192, que exige convênio com o poder público |
 
@@ -154,7 +156,7 @@ sem senha e armazenamento em memória (que apaga ao reiniciar).
 | Comando | O que faz |
 |---------|-----------|
 | `npm run dev` | Servidor de desenvolvimento |
-| `npm test` | Testes automatizados (Vitest, 113 testes) |
+| `npm test` | Testes automatizados (Vitest, 132 testes) |
 | `npm run lint` | Checagem de tipos (TypeScript) |
 | `npm run build` | Build de produção |
 
@@ -167,7 +169,7 @@ Upstash Redis. Passo a passo completo, incluindo o WhatsApp, em
 **Variáveis de ambiente:** todas são opcionais em desenvolvimento e estão documentadas em
 [`.env.example`](.env.example). Em produção, as obrigatórias são `DASHBOARD_TOKEN` e o par do
 Redis (`KV_REST_API_URL`/`KV_REST_API_TOKEN`); o WhatsApp precisa também das variáveis
-`WHATSAPP_*`.
+`WHATSAPP_*`, e a IA da triagem, de `OPENROUTER_API_KEY` (sem ela, só as regras são usadas).
 
 ### Tecnologias utilizadas
 
@@ -179,6 +181,7 @@ Redis (`KV_REST_API_URL`/`KV_REST_API_TOKEN`); o WhatsApp precisa também das va
 | WhatsApp Cloud API (Meta) | Graph API v23.0 | Canal oficial: texto, botões, listas e pedido de localização |
 | Upstash Redis | `@upstash/redis` 1.41 | Sessões, chamados e deduplicação, com expiração automática (TTL) |
 | Zod | 4 | Validação do corpo das requisições nas APIs públicas |
+| OpenRouter Decisions API | `perplexity/pplx-decider-v1.3:free` | IA da triagem: classifica o texto livre (sinal crítico, tipo, contexto) com probabilidades |
 | OpenStreetMap | — | Mapa com a localização da vítima no painel |
 | Vitest | 5 | Testes automatizados |
 | CSS puro + Web App Manifest | — | Layout mobile-first, tema claro/escuro e PWA instalável |
@@ -270,11 +273,28 @@ Usuário no WhatsApp ──► "meu pai caiu da escada e não acorda"
 
 ### Onde está a "IA"
 
-A triagem é um **sistema especialista baseado em regras**, uma forma clássica de IA, somado a um
-**entendimento de linguagem natural por palavras-chave** (entende "ele não tá respirando" ou
-"bati o carro"). Em saúde, a decisão precisa ser **previsível e explicável**: cada gravidade
-aponta a regra que a gerou. A evolução prevista é usar IA generativa só para interpretar textos e
-áudios difíceis, mantendo as regras como rede de segurança.
+Em duas camadas:
+
+1. **Sistema especialista baseado em regras**, uma forma clássica de IA, com **entendimento de
+   linguagem natural por palavras-chave** (entende "ele não tá respirando" ou "bati o carro"). Em
+   saúde, a decisão precisa ser **previsível e explicável**: cada gravidade aponta a regra que a
+   gerou.
+2. **Modelo de decisão** ([Perplexity Decider V1.3](https://openrouter.ai/perplexity/pplx-decider-v1.3:free),
+   via OpenRouter, gratuito) para o que as regras não reconhecem. Ele não gera texto: lê o relato
+   e devolve **probabilidades** para perguntas fechadas (há sinal de risco de vida? que tipo de
+   acidente? trânsito ou casa?), e o código aplica limiares.
+
+| Relato | Só regras | Com a IA |
+|---|---|---|
+| "meu amigo bateu de moto e tá todo mole, não fala nada" | Perguntas de triagem | 🔴 Crítica (vítima inconsciente) → localização |
+| "minha vó tropeçou no tapete e o braço ficou torto" | Menu inicial | Triagem de **Queda** |
+| "o bebê colocou uma moeda na boca e tá ficando roxinho" | Menu inicial | 🔴 Crítica → **manobra de desengasgo** |
+| "quanto custa o plano?" | Menu inicial | Menu inicial |
+
+**Regras de segurança da IA:** as palavras-chave sempre têm prioridade; um sinal crítico é aceito
+quando "nenhum" fica abaixo de 50% (na dúvida, para cima); tipo e contexto exigem 60%; o relato é
+tratado como dado, não como ordem; e erro, recusa ou demora acima de 4 s simplesmente deixam a
+conversa seguir pelas regras. Detalhes em [docs/API.md](docs/API.md#serviço-externo-ia-da-triagem).
 
 ### Arquitetura
 
@@ -302,8 +322,8 @@ Diagramas completos (fluxo, sequência e estados da conversa) em
 
 ### Qualidade
 
-- **113 testes automatizados** em 6 suítes: NLU, triagem, máquina de estados, geolocalização,
-  WhatsApp (parser, payloads e assinatura) e orquestrador.
+- **132 testes automatizados** em 7 suítes: NLU, triagem, máquina de estados, geolocalização,
+  WhatsApp (parser, payloads e assinatura), orquestrador e IA da triagem (sem chamar a rede).
 - Um teste varre **todas as mensagens geradas** e confere os limites do WhatsApp (3 botões,
   títulos de até 20/24 caracteres, corpo de até 1.024).
 - Checagem de tipos (`tsc`) e build automático na Vercel a cada push.
@@ -412,6 +432,7 @@ emergencIA/
 │       ├── geo/                  ← distâncias e hospitais próximos
 │       ├── store/                ← persistência (memória | Redis)
 │       ├── whatsapp/             ← integração com a WhatsApp Cloud API
+│       ├── ai/decider.ts         ← IA da triagem (OpenRouter Decisions API)
 │       └── config.ts             ← leitura tipada das variáveis de ambiente
 ├── tests/                        ← testes automatizados (Vitest)
 ├── public/icon.svg               ← ícone do app
@@ -430,7 +451,8 @@ emergencIA/
 
 ### Próximos passos
 
-- [x] Núcleo de triagem e conversa, com 113 testes
+- [x] Núcleo de triagem e conversa, com 132 testes
+- [x] IA da triagem para texto livre (Perplexity Decider via OpenRouter), com as regras como rede de segurança
 - [x] Simulador, painel do hospital e página inicial (PWA)
 - [x] Deploy na Vercel com Upstash Redis e painel protegido por senha
 - [x] Vídeo de demonstração no simulador
@@ -439,7 +461,7 @@ emergencIA/
 - [ ] Alinhar a apresentação aos itens 2 e 4 do edital e montar os slides (F6.4, F6.5)
 - [ ] Ensaio geral cronometrado (F6.6)
 - [ ] Revisão do conteúdo de primeiros socorros por profissional de saúde
-- [ ] 🔶 Evoluções: base CNES, geocodificação de endereço, IA generativa para texto livre, login por hospital, integração com o SAMU 192
+- [ ] 🔶 Evoluções: base CNES, geocodificação de endereço, IA para áudio transcrito, login por hospital, integração com o SAMU 192
 
 ---
 

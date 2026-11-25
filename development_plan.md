@@ -25,7 +25,7 @@ conferir.
 | F4 Web mobile (PWA) | 7/7 | ✅ |
 | F5 Deploy e documentação | 4/6 | 🟡 no ar na Vercel com Redis; faltam as variáveis e o webhook do WhatsApp |
 | F6 Apresentação | 3/6 | 🟡 depende do texto do edital (itens 2 e 4) |
-| **MVP** | **38/45** | Testes automatizados: **113 passando** |
+| **MVP** | **38/45** | Testes automatizados: **132 passando** · evolução F7.1 (IA da triagem) concluída |
 
 ---
 
@@ -158,6 +158,7 @@ stateDiagram-v2
 |---|------------|---------|------------------|
 | C1 | **Tipos de domínio** | `src/lib/domain/types.ts` | Contratos compartilhados: sessão, mensagens de entrada/saída independentes de canal, chamado, hospital, gravidade. |
 | C2 | **NLU (palavras-chave)** | `src/lib/triage/nlu.ts` | Normaliza texto (acentos, caixa), detecta sinais de alerta críticos, contexto (trânsito/doméstico), tipo de acidente, sim/não e comandos (`menu`, `piorou`). |
+| C2b | **IA da triagem** (F7.1) | `src/lib/ai/decider.ts` | Quando as palavras-chave não reconhecem o texto, consulta o modelo de decisão `perplexity/pplx-decider-v1.3:free` (OpenRouter Decisions API) e devolve pistas (sinal crítico, tipo, contexto) com limiares de confiança. Opcional (`OPENROUTER_API_KEY`) e à prova de falhas. |
 | C3 | **Base de protocolos** | `src/lib/triage/protocols.ts` | Conteúdo de primeiros socorros por tipo de acidente, perguntas de triagem específicas e instruções imediatas para casos críticos. |
 | C4 | **Motor de triagem** | `src/lib/triage/engine.ts` | Calcula a gravidade (CRÍTICA, ALTA, MODERADA, BAIXA) a partir das respostas e define a conduta (acionar hospital, indicar PS, cuidados em casa). |
 | C5 | **Máquina de estados da conversa** | `src/lib/conversation/machine.ts` | Função pura `(sessão, entrada) → (nova sessão, respostas, efeitos)`. Não faz I/O. |
@@ -186,7 +187,7 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 | Persistência | **Upstash Redis** (Vercel Marketplace) | Funções serverless não guardam estado entre execuções. O Redis serve via REST (bom para serverless), tem TTL nativo para sessões, plano gratuito e integração com um clique na Vercel. |
 | Validação | **Zod 4** | Valida o corpo das requisições nas APIs públicas. |
 | Geo | **Haversine + base local de hospitais** | Sem custo e sem chave de API, determinístico e testável. Evolução prevista: OpenStreetMap/Overpass ou CNES/DataSUS. |
-| "IA" da triagem | **Sistema especialista baseado em regras** + NLU por palavras-chave | Em saúde, as regras são auditáveis e previsíveis, e cada resposta pode ser rastreada até o protocolo. 🔶 Evolução: LLM (Claude) apenas para interpretar texto livre, sempre com as regras como rede de segurança. |
+| "IA" da triagem | **Sistema especialista baseado em regras** + NLU por palavras-chave | Em saúde, as regras são auditáveis e previsíveis, e cada resposta pode ser rastreada até o protocolo. **IA de reforço (F7.1):** o modelo de decisão `perplexity/pplx-decider-v1.3:free` (OpenRouter, gratuito) classifica só o texto livre que as regras não reconhecem e devolve probabilidades, não texto; as regras têm prioridade. |
 | Testes | **Vitest 5** | Rápido, compatível com TypeScript, sem configuração pesada. |
 | Deploy | **Vercel** | Requisito do projeto. CI/CD por git push, previews por branch, HTTPS automático (exigido pelo webhook da Meta). |
 
@@ -282,7 +283,7 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 
 | ✔ | ID | Tarefa |
 |---|----|--------|
-| [ ] | F7.1 | 🔶 LLM (Claude) para interpretar texto livre e áudio transcrito, com as regras como rede de segurança |
+| [x] | F7.1 | 🔶 IA para interpretar texto livre, com as regras como rede de segurança: modelo de decisão `perplexity/pplx-decider-v1.3:free` via OpenRouter Decisions API (`src/lib/ai/decider.ts`, `tests/ai.test.ts`). Áudio transcrito fica para depois |
 | [ ] | F7.2 | 🔶 Geocodificação de endereço digitado (quando o usuário não consegue enviar o 📍) |
 | [ ] | F7.3 | 🔶 Base de hospitais oficial (CNES/DataSUS) e filtro por especialidade (queimados, trauma, pediatria) |
 | [ ] | F7.4 | 🔶 Login por hospital (cada hospital vê só os seus chamados) |
@@ -358,6 +359,7 @@ Redis (pela Vercel) e o texto do edital.
 | `tests/geo.test.ts` | C7 | Distância conhecida SP–RJ ≈ 357 km; ordenação dos hospitais mais próximos |
 | `tests/whatsapp.test.ts` | C10 | Parse de texto, botão, lista e localização; payloads; assinatura válida e inválida |
 | `tests/orchestrator.test.ts` | C6 + C8 + C9 | Caso grave gera chamado com hospital mais próximo; caso moderado não gera chamado; piora adiciona nota; deduplicação |
+| `tests/ai.test.ts` | IA da triagem (F7.1) | Limiares (na dúvida, para cima); recusa/erro/tempo esgotado = sem pista; regras vencem a IA; engasgo + lábios roxos → manobra de desengasgo; IA não é chamada para botões, comandos e respostas curtas |
 
 **Critério de aceite do MVP:** todas as suítes verdes, `npm run lint` (tsc) sem erros e
 `npm run build` concluído.

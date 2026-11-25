@@ -2,15 +2,25 @@
  * Utilitários compartilhados pelas rotas de API (somente servidor).
  */
 import { timingSafeEqual } from "node:crypto";
+import { createDeciderInterpreter } from "@/lib/ai/decider";
 import { DefaultNotifier } from "@/lib/alerts/notifier";
-import type { AlertDeps } from "@/lib/alerts/service";
-import { dashboardToken } from "@/lib/config";
+import { aiConfig, dashboardToken } from "@/lib/config";
+import type { OrchestratorDeps } from "@/lib/conversation/orchestrator";
 import { getStore } from "@/lib/store";
 
-/** Dependências reais (Store configurado + notificador padrão + relógio do sistema). */
-export function defaultDeps(): AlertDeps {
+/**
+ * Dependências reais: Store configurado, notificador padrão, relógio do sistema e, se
+ * OPENROUTER_API_KEY estiver definida, a IA da triagem.
+ */
+export function defaultDeps(): OrchestratorDeps {
   const store = getStore();
-  return { store, notifier: new DefaultNotifier(store), now: () => Date.now() };
+  const ai = aiConfig();
+  return {
+    store,
+    notifier: new DefaultNotifier(store),
+    now: () => Date.now(),
+    interpret: ai ? createDeciderInterpreter(ai) : undefined,
+  };
 }
 
 /**
