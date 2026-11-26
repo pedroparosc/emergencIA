@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseWebhook } from "@/lib/whatsapp/parse";
+import { maskPhone, parseDeliveryFailures, parseWebhook } from "@/lib/whatsapp/parse";
 import { toGraphPayload } from "@/lib/whatsapp/payload";
 import { computeSignature, isValidSignature } from "@/lib/whatsapp/signature";
 
@@ -87,5 +87,44 @@ describe("assinatura do webhook", () => {
     expect(isValidSignature(body, "sha256=abc", secret)).toBe(false);
     expect(isValidSignature(body, null, secret)).toBe(false);
     expect(isValidSignature(body + " ", computeSignature(body, secret), secret)).toBe(false);
+  });
+});
+
+describe("parseDeliveryFailures", () => {
+  const statusWebhook = (statuses: unknown[]) => ({
+    object: "whatsapp_business_account",
+    entry: [{ id: "WABA_ID", changes: [{ field: "messages", value: { messaging_product: "whatsapp", statuses } }] }],
+  });
+
+  it("extrai falhas de entrega com o telefone mascarado", () => {
+    const failures = parseDeliveryFailures(
+      statusWebhook([
+        { id: "wamid.9", status: "sent", recipient_id: "5511988887777" },
+        {
+          id: "wamid.9",
+          status: "failed",
+          recipient_id: "5511988887777",
+          errors: [{ code: 131026, title: "Message undeliverable", error_data: { details: "detalhe" } }],
+        },
+      ]),
+    );
+    expect(failures).toEqual([
+      { messageId: "wamid.9", recipient: "5511…77", errors: ["131026 · Message undeliverable · detalhe"] },
+    ]);
+  });
+
+  it("ignora status normais, mensagens e payloads inválidos", () => {
+    expect(parseDeliveryFailures(statusWebhook([{ id: "x", status: "delivered" }]))).toEqual([]);
+    expect(parseDeliveryFailures(webhook({ type: "text", text: { body: "oi" } }))).toEqual([]);
+    expect(parseDeliveryFailures(null)).toEqual([]);
+  });
+
+  it("status não viram mensagens de usuário", () => {
+    expect(parseWebhook(statusWebhook([{ id: "x", status: "failed" }]))).toEqual([]);
+  });
+
+  it("maskPhone esconde o meio do número", () => {
+    expect(maskPhone("5511988887777")).toBe("5511…77");
+    expect(maskPhone("123")).toBe("…");
   });
 });
