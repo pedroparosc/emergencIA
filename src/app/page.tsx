@@ -113,6 +113,9 @@ export default function Home() {
           públicos de primeiros socorros e não substituem atendimento profissional. Emergências: SAMU 192 ·
           Bombeiros 193 · Polícia 190 · Disque-Intoxicação 0800 722 6001.
         </p>
+        <p>
+          <Link href="/privacidade">Política de privacidade</Link>
+        </p>
       </footer>
     </main>
   );
