@@ -30,6 +30,21 @@ interface WaMessage {
   location?: { latitude: number; longitude: number; name?: string; address?: string };
 }
 
+interface WaStatus {
+  id?: string;
+  status?: string;
+  recipient_id?: string;
+  errors?: Array<{ code?: number; title?: string; message?: string; error_data?: { details?: string } }>;
+}
+
+/** Falha de entrega informada pela Meta (status "failed"), para registrar no log. */
+export interface DeliveryFailure {
+  messageId: string;
+  /** Destinatário mascarado (só o início e o fim), para não expor o telefone no log. */
+  recipient: string;
+  errors: string[];
+}
+
 interface WaWebhook {
   object?: string;
   entry?: Array<{
@@ -38,6 +53,7 @@ interface WaWebhook {
       value?: {
         contacts?: Array<{ wa_id?: string; profile?: { name?: string } }>;
         messages?: WaMessage[];
+        statuses?: WaStatus[];
       };
     }>;
   }>;
@@ -88,6 +104,36 @@ export function parseWebhook(body: unknown): ParsedWhatsAppMessage[] {
         if (!input || !m.id || !m.from) continue;
         const contact = value.contacts?.find((c) => c.wa_id === m.from) ?? value.contacts?.[0];
         result.push({ messageId: m.id, from: m.from, profileName: contact?.profile?.name, input });
+      }
+    }
+  }
+  return result;
+}
+
+/** Mascara um telefone para log: 5511987654321 → 5511…21. */
+export function maskPhone(phone: string): string {
+  return phone.length > 6 ? `${phone.slice(0, 4)}…${phone.slice(-2)}` : "…";
+}
+
+/**
+ * Extrai as notificações de status com falha de entrega ("failed"). A Meta aceita o envio
+ * (HTTP 200) e só depois avisa que não conseguiu entregar, então sem isso o erro some.
+ */
+export function parseDeliveryFailures(body: unknown): DeliveryFailure[] {
+  const payload = body as WaWebhook;
+  if (!payload || payload.object !== "whatsapp_business_account") return [];
+  const result: DeliveryFailure[] = [];
+  for (const entry of payload.entry ?? []) {
+    for (const change of entry.changes ?? []) {
+      for (const st of change.value?.statuses ?? []) {
+        if (st.status !== "failed") continue;
+        result.push({
+          messageId: st.id ?? "",
+          recipient: maskPhone(st.recipient_id ?? ""),
+          errors: (st.errors ?? []).map((e) =>
+            [e.code, e.title ?? e.message, e.error_data?.details].filter(Boolean).join(" · "),
+          ),
+        });
       }
     }
   }

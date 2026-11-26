@@ -11,7 +11,7 @@ import { whatsappAppSecret, whatsappVerifyToken } from "@/lib/config";
 import { handleIncoming } from "@/lib/conversation/orchestrator";
 import { defaultDeps } from "@/lib/server";
 import { sendWhatsAppMessages } from "@/lib/whatsapp/client";
-import { parseWebhook, type ParsedWhatsAppMessage } from "@/lib/whatsapp/parse";
+import { parseDeliveryFailures, parseWebhook, type ParsedWhatsAppMessage } from "@/lib/whatsapp/parse";
 import { isValidSignature } from "@/lib/whatsapp/signature";
 
 export const runtime = "nodejs";
@@ -44,6 +44,10 @@ export async function POST(request: Request): Promise<Response> {
     body = JSON.parse(rawBody);
   } catch {
     return new Response("JSON inválido", { status: 400 });
+  }
+
+  for (const failure of parseDeliveryFailures(body)) {
+    console.error("[whatsapp] Mensagem não entregue", failure.recipient, failure.errors.join(" | "));
   }
 
   const deps = defaultDeps();
