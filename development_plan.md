@@ -21,9 +21,9 @@ conferir.
 | F0 Fundação | 5/5 | ✅ |
 | F1 Núcleo de triagem e conversa | 6/6 | ✅ |
 | F2 Geo, persistência e chamados | 8/8 | ✅ |
-| F3 Integração WhatsApp | 5/7 | 🟡 falta validar com a conta Meta da equipe |
+| F3 Integração WhatsApp | 5/7 | 🟡 webhook e assinatura validados; falta publicar o app na Meta e testar no celular |
 | F4 Web mobile (PWA) | 7/7 | ✅ |
-| F5 Deploy e documentação | 4/6 | 🟡 no ar na Vercel com Redis; faltam as variáveis e o webhook do WhatsApp |
+| F5 Deploy e documentação | 6/6 | ✅ no ar na Vercel com Redis, WhatsApp configurado e webhook verificado |
 | F6 Apresentação | 3/6 | 🟡 depende do texto do edital (itens 2 e 4) |
 | **MVP** | **38/45** | Testes automatizados: **113 passando** |
 
@@ -260,8 +260,8 @@ A documentação de cada interface fica em [docs/API.md](docs/API.md) e
 | [x] | F5.2 | Guia de configuração do WhatsApp Cloud API (no mesmo guia) | Revisão |
 | [x] | F5.3 | Documentação de API e arquitetura (`docs/API.md`, `docs/ARQUITETURA.md`) | Revisão |
 | [x] | F5.4 | Criar o projeto na Vercel, conectar o GitHub e adicionar o Upstash Redis | https://emergenc-ia-gules.vercel.app/api/health responde `ok` com `store: redis` (24/11/2026) |
-| [ ] | F5.5 | Configurar as variáveis de ambiente de produção | `/api/health` mostra `whatsapp: true`, `store: redis`. Feito: `DASHBOARD_TOKEN` e Redis (`dashboardProtected: true`, `store: redis`); falta: variáveis do WhatsApp (depende da F5.6/conta Meta) |
-| [ ] | F5.6 | Registrar o webhook na Meta apontando para a Vercel | Meta mostra "Verificado" |
+| [x] | F5.5 | Configurar as variáveis de ambiente de produção | `/api/health` mostra `whatsapp: true`, `webhookSignature: true`, `store: redis` (26/11/2026, número de teste da Meta) |
+| [x] | F5.6 | Registrar o webhook na Meta apontando para a Vercel | Webhook verificado e campo `messages` assinado; teste do painel da Meta → `POST` 200. Para receber mensagens reais o app precisa estar publicado, com a política em `/privacidade` |
 
 > F3.7, F5.5 e F5.6 dependem da conta Meta Developers da equipe, por isso são executadas pela
 > equipe seguindo o guia. Produção: https://emergenc-ia-gules.vercel.app (deploy automático a
@@ -304,7 +304,7 @@ semana. "h" são horas de trabalho somadas.
 | F2 — Geo, persistência e chamados | 10 h | 1 semana | ✅ concluída |
 | F3 — Integração WhatsApp | 10 h | 1 semana | 🟡 código pronto; falta o teste E2E com a conta Meta (F3.6, F3.7) |
 | F4 — Web mobile (PWA) | 12 h | 1 semana | ✅ concluída |
-| F5 — Deploy e documentação | 6 h | 2 a 3 dias | 🟡 no ar na Vercel com Redis; falta o WhatsApp (F5.5, F5.6) |
+| F5 — Deploy e documentação | 6 h | 2 a 3 dias | ✅ no ar na Vercel com Redis e WhatsApp configurado |
 | F6 — Apresentação | 8 h | 1 semana | 🟡 roteiro pronto; falta o texto do edital e os slides (F6.4 a F6.6) |
 | **Total MVP** | **≈ 64 h** | **≈ 5 a 6 semanas** | |
 | F7 — Evoluções | 30 a 60 h | conforme o tempo restante | 🔶 |

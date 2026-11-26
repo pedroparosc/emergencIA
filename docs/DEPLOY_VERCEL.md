@@ -161,6 +161,17 @@ Deve responder `123`.
 
 ### 6.4 Primeiro teste
 
+> **Publique o app antes de testar no celular.** Em modo de desenvolvimento a Meta só entrega ao
+> webhook os testes enviados pelo painel (*Webhook fields → messages → Test*), nunca mensagens
+> reais, nem as dos administradores. Para receber mensagens, mude o app para **Ao vivo**
+> (chave no topo do painel). A Meta pede uma URL de política de privacidade: use
+> `https://SEU-PROJETO.vercel.app/privacidade`. Publicar não exige verificação da empresa nem
+> análise do app para o número de teste.
+>
+> Se o portfólio empresarial recém-criado não aparecer na criação do app, crie o app no modo
+> clássico (**Outro → Empresa**) e crie o portfólio em **Configurações do app → Básico →
+> Portfólio empresarial**: assim ele nasce ligado ao app.
+
 1. De um celular cadastrado, mande **"oi"** para o número de teste.
 2. O bot responde com os botões *Trânsito / Em casa*.
 3. Teste um caso grave: *"meu pai caiu da escada e não acorda"* → toque em **Enviar
